@@ -21,7 +21,7 @@ export default function Analytics() {
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 50 }}
-            className="p-4 pt-8 pb-32 min-h-[100dvh] bg-background space-y-8"
+            className="px-0 pt-8 pb-32 min-h-[100dvh] bg-background space-y-8"
         >
             <div>
                 <h2 className="text-3xl font-display font-bold">Analytics</h2>

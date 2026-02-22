@@ -16,7 +16,7 @@ export default function AiInsights({ onBack }) {
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 50 }}
-            className="p-4 pt-12 pb-32 min-h-screen relative"
+            className="px-0 pt-12 pb-32 min-h-screen relative"
         >
             <div className="flex items-center gap-3 mb-10">
                 <div className="w-12 h-12 bg-primary-500/20 text-primary-400 rounded-2xl flex items-center justify-center border border-primary-500/30 glow-ring-green">

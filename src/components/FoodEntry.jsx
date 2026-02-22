@@ -33,7 +33,7 @@ export default function FoodEntry({ onBack, onAdd }) {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="p-4 pt-8 pb-32 min-h-[100dvh] flex flex-col items-center max-w-md mx-auto w-full relative bg-card"
+            className="pt-8 pb-32 min-h-[100dvh] flex flex-col items-center max-w-full px-0 mx-auto w-full relative bg-card"
         >
             {/* Header */}
             <div className="w-full flex items-center justify-between mb-8">

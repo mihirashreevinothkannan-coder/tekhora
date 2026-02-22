@@ -8,7 +8,7 @@ export default function Settings({ user, onReset }) {
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -50 }}
-            className="p-4 pt-12 min-h-screen relative"
+            className="px-0 pt-12 min-h-screen relative"
         >
             <div className="flex items-center gap-3 mb-10">
                 <SettingsIcon size={28} className="text-gray-400" />

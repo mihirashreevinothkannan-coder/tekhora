@@ -9,7 +9,7 @@ export default function HeroScreen({ onNext }) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.5 }}
-            className="flex flex-col items-center justify-center min-h-[100dvh] p-6 relative z-10"
+            className="flex flex-col items-center justify-center min-h-[100dvh] px-0 py-6 relative z-10"
         >
             <motion.div
                 initial={{ scale: 0.5, opacity: 0 }}
@@ -30,7 +30,7 @@ export default function HeroScreen({ onNext }) {
                     Build Discipline <br />
                     <span className="text-primary-400">Through Nutrition</span>
                 </h1>
-                <p className="text-gray-300 font-medium text-lg max-w-sm mx-auto">
+                <p className="text-gray-300 font-medium text-lg max-w-full mx-auto">
                     Gamified AI tracking for your Indian meals. Level up your health.
                 </p>
             </motion.div>
@@ -40,7 +40,7 @@ export default function HeroScreen({ onNext }) {
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.6 }}
                 onClick={onNext}
-                className="w-full max-w-xs py-4 px-6 flex items-center justify-center gap-2 btn-pop btn-primary text-lg"
+                className="w-full max-w-full py-4 px-6 flex items-center justify-center gap-2 btn-pop btn-primary text-lg"
             >
                 Start Tracking
                 <ChevronRight size={24} />

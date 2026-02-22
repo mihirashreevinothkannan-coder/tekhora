@@ -4,6 +4,7 @@ import { Zap, Crown, ShieldAlert } from 'lucide-react';
 import ProgressRing from './ui/ProgressRing';
 import FlameStreak from './ui/FlameStreak';
 import RecoveryCard from './RecoveryCard';
+import AiChat from './AiChat';
 import { useData } from '../hooks/useData';
 
 export default function Dashboard({ data, onLogFood }) {
@@ -42,7 +43,7 @@ export default function Dashboard({ data, onLogFood }) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="p-4 pt-8 pb-32 min-h-full space-y-6"
+            className="px-0 pt-8 pb-32 min-h-full space-y-6"
         >
             {/* Top Bar */}
             <div className="flex justify-between items-center bg-card/60 rounded-3xl p-3 border border-white/5 backdrop-blur-md">
@@ -103,6 +104,13 @@ export default function Dashboard({ data, onLogFood }) {
                         <span className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Sugar <span className="opacity-50">/{stats.sugar.target}</span></span>
                     </div>
                 </div>
+
+                {/* AI Coach Chat Interface integrated into card */}
+                {!pendingRecovery && (
+                    <div className="w-full mt-8 border-t border-white/10 pt-6">
+                        <AiChat userStats={stats} />
+                    </div>
+                )}
             </div>
 
             {/* Conditional Recovery */}
@@ -111,24 +119,6 @@ export default function Dashboard({ data, onLogFood }) {
                     <RecoveryCard session={pendingRecovery} onComplete={() => applyRecovery(pendingRecovery.id)} />
                 )}
             </AnimatePresence>
-
-            {/* AI Coach Mini Card */}
-            {!pendingRecovery && (
-                <div className="p-5 rounded-3xl bg-white/5 border border-white/10 relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 p-4 opacity-10 transition-transform group-hover:scale-110 group-hover:rotate-12 duration-500">
-                        <Zap size={64} />
-                    </div>
-                    <h3 className="text-lg font-display font-bold mb-2 flex items-center gap-2">
-                        <span className="bg-primary-500/20 text-primary-400 p-1 rounded-md text-xs">AI</span> Coach Readout
-                    </h3>
-                    <p className="text-gray-300 text-sm leading-relaxed">
-                        {isOverCals ? "You overshot your calories. Check the recovery card to restore your score!" :
-                            isOverSugar ? "Watch the sugar intake today! Try opting for some complex carbs next meal." :
-                                log.totalProtein < user.proteinTarget * 0.5 ? "Protein is looking a bit low. Time to drop in some Dal or paneer." :
-                                    "You are doing incredible today. Keep the discipline high! 🚀"}
-                    </p>
-                </div>
-            )}
 
         </motion.div>
     );

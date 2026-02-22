@@ -3,6 +3,9 @@ import { motion } from 'framer-motion';
 import { Flame, Star, Activity, ShieldAlert, Zap } from 'lucide-react';
 import { GlassCard } from '../components/ui/GlassCard';
 import { GlowRing } from '../components/ui/GlowRing';
+import AiChat from '../components/AiChat';
+import DietPlanGenerator from '../components/DietPlanGenerator';
+import CommunityCard from '../components/CommunityCard';
 import { useDashboard } from '../hooks/useDashboard';
 import { useRecovery } from '../hooks/useRecovery';
 import { getLevelFromXP, calculateProgress, calculateNextLevelProgress } from '../utils/calculations';
@@ -24,29 +27,16 @@ export default function Dashboard() {
   const extraCalories = Math.max(0, totals.calories - NUTRITION_GOALS.baselineCalories);
   const walkingMinutes = extraCalories > 0 ? Math.ceil(extraCalories / 7) : 20;
 
+  const aiStats = {
+      calories: { current: totals.calories, target: NUTRITION_GOALS.baselineCalories },
+      protein: { current: totals.protein, target: NUTRITION_GOALS.proteinTarget },
+      sugar: { current: totals.sugar, target: NUTRITION_GOALS.maxSugarGrams },
+  };
+
   return (
-    <div className="space-y-6 pb-20 fade-in">
-      {/* Header Profile Area */}
-      <div className="flex justify-between items-center px-2">
-        <div>
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-green-400 to-emerald-200 bg-clip-text text-transparent">
-            {user?.name || "Warrior"}
-          </h1>
-          <p className="text-slate-400 text-sm">Target: {user?.goal || 'Maintain'}</p>
-        </div>
-        
-        <GlassCard className="flex items-center gap-3 p-3 py-2 rounded-2xl bg-black/40">
-          <div className="flex items-center gap-1">
-             <motion.div 
-               animate={{ scale: [1, 1.2, 1], filter: ['drop-shadow(0 0 2px #fb923c)', 'drop-shadow(0 0 8px #fb923c)', 'drop-shadow(0 0 2px #fb923c)'] }} 
-               transition={{ duration: 1.5, repeat: Infinity }}
-             >
-               <Flame className="text-orange-400 w-5 h-5 fill-current" />
-             </motion.div>
-             <span className="font-bold text-lg text-glow-orange">{streak}</span>
-          </div>
-        </GlassCard>
-      </div>
+    <div className="pb-20 fade-in lg:grid lg:grid-cols-12 lg:gap-10 lg:min-h-full lg:items-start space-y-8 lg:space-y-0">
+      {/* --- LEFT COLUMN (Stats) --- */}
+      <div className="lg:col-span-5 xl:col-span-5 flex flex-col gap-6">
 
       {/* Level & XP */}
       <GlassCard className="p-4 flex flex-col gap-3">
@@ -116,6 +106,16 @@ export default function Dashboard() {
            </GlassCard>
         </div>
       </div>
+      
+      {/* Community / Friends Card */}
+      <CommunityCard />
+      
+      </div>
+
+      {/* --- RIGHT COLUMN (AI Tools & Action) --- */}
+      <div className="lg:col-span-7 xl:col-span-7 flex flex-col gap-6 h-full">
+      {/* Diet Plan Generator */}
+      <DietPlanGenerator userStats={aiStats} userGoal={user?.goal} />
 
       {/* AI Coach */}
       <GlassCard className="relative overflow-hidden border-2 border-indigo-500/30">
@@ -138,6 +138,11 @@ export default function Dashboard() {
            <span className={`font-bold ${currentScore >= 80 ? 'text-green-400' : 'text-orange-400'}`}>
              {Math.round(currentScore)} / 100
            </span>
+        </div>
+
+        {/* AI Chat Bot Interface */}
+        <div className="w-full mt-4 pt-4 border-t border-indigo-500/20">
+             <AiChat userStats={aiStats} />
         </div>
       </GlassCard>
 
@@ -187,6 +192,7 @@ export default function Dashboard() {
            </div>
          </motion.div>
       )}
+      </div>
     </div>
   );
 }

@@ -36,7 +36,7 @@ export default function App() {
         <div className="min-h-[100dvh] w-full text-white overflow-hidden bg-background font-sans relative pb-20 md:pb-0">
             <ParticlesBackground />
 
-            <main className="relative z-10 w-full max-w-md mx-auto min-h-[100dvh] flex flex-col">
+            <main className="relative z-10 w-full max-w-full px-0 mx-auto min-h-[100dvh] flex flex-col">
                 <AnimatePresence mode="wait">
                     {currentScreen === 'hero' && <HeroScreen key="hero" onNext={() => navigate('setup')} />}
 
@@ -85,8 +85,8 @@ export default function App() {
 
             {/* Bottom Navigation for Core Application screens */}
             {!['hero', 'setup'].includes(currentScreen) && (
-                <nav className="fixed bottom-0 left-0 right-0 z-50 p-3 pb-6 glass border-t border-white/10 md:hidden">
-                    <div className="max-w-md mx-auto flex justify-around items-end px-2">
+                <nav className="fixed bottom-0 left-0 right-0 z-50 p-3 pb-6 glass border-t border-white/10">
+                    <div className="max-w-full px-0 mx-auto flex justify-around items-end">
 
                         <button onClick={() => navigate('insights')} className={`p-2 flex flex-col items-center gap-1 rounded-2xl transition-all ${currentScreen === 'insights' ? 'text-primary-400' : 'text-gray-400'}`}>
                             <BrainCircuit size={22} className={currentScreen === 'insights' ? "drop-shadow-[0_0_8px_rgba(74,222,128,0.8)]" : ""} />

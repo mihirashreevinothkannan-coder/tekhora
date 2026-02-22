@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Camera, Search, Plus, Sparkles, Loader2, CheckCircle2 } from 'lucide-react';
+import { Camera, Search, Plus, Sparkles, Loader2, CheckCircle2, MessageSquareText } from 'lucide-react';
 import { GlassCard } from '../components/ui/GlassCard';
 import { nutritionService } from '../services/nutritionService';
 import { useNutritionStore } from '../store/useNutritionStore';
@@ -30,10 +30,12 @@ export default function FoodEntry() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [analyzingImage, setAnalyzingImage] = useState(false);
+  const [analyzingText, setAnalyzingText] = useState(false);
+  const [smartTextInput, setSmartTextInput] = useState('');
   const [success, setSuccess] = useState(false);
 
   const filteredFoods = useMemo(() => {
-    if (!searchQuery) return FOOD_DATABASE;
+    if (!searchQuery) return [];
     return FOOD_DATABASE.filter(f => f.name.toLowerCase().includes(searchQuery.toLowerCase())).slice(0, 50);
   }, [searchQuery]);
 
@@ -116,6 +118,28 @@ export default function FoodEntry() {
     reader.readAsDataURL(file);
   };
 
+  const handleSmartTextSubmit = async (e) => {
+    e.preventDefault();
+    if (!smartTextInput) return;
+
+    setAnalyzingText(true);
+    try {
+        const aiResult = await aiService.parseNaturalLanguageFood(smartTextInput);
+        setSearchQuery(aiResult.name);
+        setMealName(aiResult.name);
+        setCalories(String(aiResult.calories));
+        setProtein(String(aiResult.protein));
+        setSugar(String(aiResult.sugar));
+        setQuantity(1);
+        setSmartTextInput('');
+        setActiveTab('manual'); // Switch to manual tab for review
+    } catch (err) {
+        console.error(err);
+    } finally {
+        setAnalyzingText(false);
+    }
+  };
+
   const handleCameraClick = () => {
     if (fileInputRef.current) {
         fileInputRef.current.click();
@@ -123,22 +147,30 @@ export default function FoodEntry() {
   };
 
   return (
-    <div className="space-y-6 pb-20 fade-in">
-      <h1 className="text-2xl font-bold px-2">Log Fuel</h1>
+    <div className="max-w-3xl mx-auto space-y-8 pb-24 fade-in">
+      <h1 className="text-3xl font-bold px-2 tracking-tight">Log Fuel</h1>
       
       {/* Target Tabs */}
-      <GlassCard className="p-2 flex gap-2">
+      <GlassCard className="p-2 flex gap-2 overflow-x-auto custom-scrollbar">
         <button 
           onClick={() => setActiveTab('manual')}
-          className={`flex-1 py-3 rounded-xl font-semibold transition-all ${
+          className={`px-4 py-3 rounded-xl font-semibold transition-all whitespace-nowrap flex-1 ${
             activeTab === 'manual' ? 'bg-green-400 text-slate-900 shadow-[0_0_15px_rgba(74,222,128,0.5)]' : 'text-slate-400 hover:bg-white/5'
           }`}
         >
           <Search className="inline w-4 h-4 mr-2" /> Manual
         </button>
         <button 
+          onClick={() => setActiveTab('smart')}
+          className={`px-4 py-3 rounded-xl font-semibold transition-all whitespace-nowrap flex-1 ${
+            activeTab === 'smart' ? 'bg-orange-500 text-white shadow-[0_0_15px_rgba(249,115,22,0.5)]' : 'text-slate-400 hover:bg-white/5'
+          }`}
+        >
+          <MessageSquareText className="inline w-4 h-4 mr-2" /> AI Text
+        </button>
+        <button 
           onClick={() => setActiveTab('camera')}
-          className={`flex-1 py-3 rounded-xl font-semibold transition-all ${
+          className={`px-4 py-3 rounded-xl font-semibold transition-all whitespace-nowrap flex-1 ${
             activeTab === 'camera' ? 'bg-indigo-500 text-white shadow-[0_0_15px_rgba(99,102,241,0.5)]' : 'text-slate-400 hover:bg-white/5'
           }`}
         >
@@ -231,6 +263,49 @@ export default function FoodEntry() {
                 <><Plus className="w-5 h-5" /> Add to Log</>
               )}
             </button>
+          </motion.form>
+        ) : activeTab === 'smart' ? (
+          <motion.form 
+            key="smart"
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -20, opacity: 0 }}
+            onSubmit={handleSmartTextSubmit}
+            className="flex flex-col gap-4"
+          >
+            <GlassCard className="space-y-4 p-6 border-2 border-orange-500/30 bg-orange-500/5">
+                <div className="flex gap-3 mb-2">
+                    <div className="bg-orange-500/20 p-3 rounded-xl h-fit">
+                        <Sparkles className="w-5 h-5 text-orange-400" />
+                    </div>
+                    <div>
+                        <h3 className="font-bold text-orange-300">Smart Log</h3>
+                        <p className="text-xs text-slate-300 mt-1">Just type what you ate. The AI will guess the macros for you.</p>
+                    </div>
+                </div>
+
+                <textarea
+                    autoFocus
+                    required
+                    rows="3"
+                    placeholder="e.g. I had two large bowls of sambar with 3 idlis and a small coffee."
+                    value={smartTextInput}
+                    onChange={(e) => setSmartTextInput(e.target.value)}
+                    className="w-full bg-slate-900/50 border border-white/20 rounded-xl p-4 text-white placeholder-slate-500 focus:outline-none focus:border-orange-400 resize-none"
+                />
+
+                <button 
+                  type="submit"
+                  disabled={analyzingText || !smartTextInput}
+                  className="w-full py-4 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold tracking-wide hover:from-orange-400 hover:to-amber-400 transition-all flex items-center justify-center gap-2"
+                >
+                  {analyzingText ? (
+                      <><Loader2 className="w-5 h-5 animate-spin" /> Decoding Food...</>
+                  ) : (
+                      <><Sparkles className="w-5 h-5" /> Analyze Macros</>
+                  )}
+                </button>
+            </GlassCard>
           </motion.form>
         ) : (
           <motion.div 

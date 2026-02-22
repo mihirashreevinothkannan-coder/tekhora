@@ -29,7 +29,7 @@ export default function ProfileSetup({ onComplete }) {
             initial={{ x: 300, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: -300, opacity: 0 }}
-            className="min-h-[100dvh] flex flex-col p-6 pt-12 relative"
+            className="min-h-[100dvh] flex flex-col px-0 pt-12 pb-6 relative"
         >
             {/* Header */}
             <div className="flex items-center justify-between mb-8">

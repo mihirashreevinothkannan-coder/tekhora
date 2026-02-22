@@ -81,5 +81,138 @@ Give a very short, punchy 2-sentence feedback evaluating their performance today
             console.error("Gemini Coach Error:", error);
             return defaultMessage;
         }
+    },
+
+    /**
+     * Interactive Chat with Coach
+     */
+    chatWithCoach: async (history, message, userStats) => {
+        if (!genAI) {
+            return "I am a mock AI. Please provide a valid Gemini API Key to chat with your real coach.";
+        }
+
+        try {
+            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+            // Format history
+            const contextHistory = history.map(msg => `${msg.role === 'user' ? 'User' : 'Coach'}: ${msg.content}`).join('\n');
+            const statsContext = userStats ? `Current Stats: ${userStats.calories.current}/${userStats.calories.target} kcal, ${userStats.protein.current}g protein, ${userStats.sugar.current}g sugar.` : '';
+
+            const prompt = `You are a tough, uncompromising but highly motivating AI Nutrition Coach for an Indian food app.
+${statsContext}
+
+Chat History:
+${contextHistory}
+
+User says: "${message}"
+
+Respond strictly as the Coach concisely. Do not use markdown like bolding or bullet points. Keep it under 3 sentences and sound like a strict sensei.`;
+
+            const result = await model.generateContent(prompt);
+            return result.response.text().trim();
+        } catch (error) {
+            console.error("Gemini Chat Error:", error);
+            return "Connection to my server is currently failing. Stay disciplined anyway.";
+        }
+    },
+
+    /**
+     * Generate Diet Plan based on user metrics
+     */
+    generateDietPlan: async (userStats, userGoal) => {
+        if (!genAI) {
+            return `## Mock Diet Plan\n- **Breakfast**: Poha (300 kcal)\n- **Lunch**: 2 Roti + Dal (400 kcal)\n- **Dinner**: Paneer Tikka (350 kcal)`;
+        }
+
+        try {
+            // Use extremely high temperature and TopK for totally random/novel plan generation
+            const model = genAI.getGenerativeModel({
+                model: "gemini-1.5-flash",
+                generationConfig: {
+                    temperature: 1.4, // ultra-high variance
+                    topK: 60,
+                    topP: 0.95,
+                }
+            });
+            const statsContext = userStats ? `Current Stats so far today: ${userStats.calories.current}/${userStats.calories.target} kcal, ${userStats.protein.current}g protein, ${userStats.sugar.current}g sugar.` : '';
+            const timestamp = new Date().getTime(); // True random string
+
+            const prompt = `You are an expert AI Nutrition Coach for an Indian food app. The user's goal is: ${userGoal || 'Maintain'}. 
+${statsContext}
+
+Generate a concise, COMPLETELY UNIQUE and NEVER-BEFORE-SEEN personalized Indian diet plan for today to help the user hit their macro targets. 
+TIMESTAMP SEED: ${timestamp}. Ignore previous cache. Provide completely different Indian dishes from the standard fare (e.g., skip basic paneer or roti if you suggested it recently). Pull from obscure regional Indian cuisines (South Indian, Bengali, Maharashtrian, etc.).
+
+Recommend exactly 3 meals (Breakfast, Lunch, Dinner) and optional snacks. 
+Include approximate calories and protein for each meal. 
+Suggest different Indian dishes than usual. 
+Format intelligently using simple markdown (bolding, simple unnested lists). Do NOT over-explain. Do not use complex tables. Just the plan.`;
+
+            const result = await model.generateContent(prompt);
+            return result.response.text().trim();
+        } catch (error) {
+            console.error("Gemini Diet Plan Error:", error);
+            return "Failed to generate diet plan. Please check your connection.";
+        }
+    },
+
+    /**
+     * Parse natural language text to estimate food macros
+     */
+    parseNaturalLanguageFood: async (textInput) => {
+        if (!genAI) {
+            console.log("Mock AI NLP Parse");
+            return {
+                name: "Mock AI Estimate",
+                calories: 300,
+                protein: 10,
+                sugar: 5
+            };
+        }
+
+        try {
+            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+            const prompt = `You are a strict Indian food nutrition database parser. 
+The user typed: "${textInput}".
+Identify the food and portion they ate. Estimate the typical calories, protein (g), and sugar (g).
+Return STRICTLY a JSON object with NO markdown formatting: {"name": "Detected Food Name", "calories": number, "protein": number, "sugar": number}.`;
+
+            const result = await model.generateContent(prompt);
+            const text = result.response.text();
+            const jsonMatch = text.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+                return JSON.parse(jsonMatch[0]);
+            }
+            throw new Error("Failed to parse JSON from AI response.");
+        } catch (error) {
+            console.error("Gemini NLP Error:", error);
+            throw error;
+        }
+    },
+
+    /**
+     * Generate Insights for the Analytics Page
+     */
+    generateWeeklyInsights: async (weeklyData) => {
+        if (!genAI) {
+            return "Your discipline is steady. Watch the sugar spikes on weekends. Keep pushing your caloric limits to build more muscle.";
+        }
+
+        try {
+            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+            // Summarize the data for the prompt
+            const dataString = weeklyData.map(d => `${d.day}: ${d.calories}kcal, ${d.protein}g protein, ${d.sugar}g sugar, Score: ${d.score}`).join('\n');
+
+            const prompt = `You are an elite AI Health Analyst. Review this user's last 7 days of nutrition data:
+${dataString}
+
+Provide a short, 3-sentence deep-dive analysis of their trends. Point out any concerning sugar spikes, caloric drops, or discipline praise. Speak directly to the user in a strict, analytical, "health hacker" tone. No bullet points.`;
+
+            const result = await model.generateContent(prompt);
+            return result.response.text().trim();
+        } catch (error) {
+            console.error("Gemini Insights Error:", error);
+            return "Failed to analyze trends. System offline.";
+        }
     }
 };
