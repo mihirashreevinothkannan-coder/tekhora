@@ -3,6 +3,7 @@ import { useUserStore } from '../store/useUserStore';
 import { useNutritionStore } from '../store/useNutritionStore';
 import { calculateDisciplineScore } from '../services/disciplineEngine';
 import { aiCoachService } from '../services/aiCoachService';
+import { aiService } from '../services/aiService';
 import { NUTRITION_GOALS } from '../utils/constants';
 
 // Business logic isolated in hooks/services
@@ -26,8 +27,15 @@ export const useDashboard = () => {
         setDisciplineScore(score);
 
         // Update AI Coach Message
-        setCoachMessage(aiCoachService.getCoachMessage({ totals, disciplineScoreStatus: status }));
+        const defaultMsg = aiCoachService.getCoachMessage({ totals, disciplineScoreStatus: status });
+        setCoachMessage('Analyzing...');
 
+        aiService.generateCoachMessage({
+            totals,
+            score,
+            status,
+            defaultMessage: defaultMsg
+        }).then(msg => setCoachMessage(msg));
     }, [totals, isRecoveryMode, setDisciplineScore]);
 
     // Derived state to pass to view

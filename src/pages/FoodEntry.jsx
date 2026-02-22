@@ -9,19 +9,10 @@ import { useUserStore } from '../store/useUserStore';
 import { streakService } from '../services/streakService';
 import { calculateDisciplineScore } from '../services/disciplineEngine';
 
-// Mock DB for the searchable dropdown
-const MOCK_FOOD_DB = [
-  { id: 1, name: 'Chicken Biryani', calories: 450, protein: 25, sugar: 5 },
-  { id: 2, name: 'Paneer Butter Masala', calories: 350, protein: 12, sugar: 8 },
-  { id: 3, name: 'Masala Dosa', calories: 250, protein: 6, sugar: 4 },
-  { id: 4, name: 'Dal Tadka', calories: 150, protein: 8, sugar: 2 },
-  { id: 5, name: 'Butter Naan', calories: 180, protein: 4, sugar: 3 },
-  { id: 6, name: 'Protein Shake', calories: 120, protein: 24, sugar: 2 },
-  { id: 7, name: 'Oats with Apple', calories: 200, protein: 6, sugar: 12 },
-];
-
+import { FOOD_DATABASE, aiService } from '../services/aiService';
 export default function FoodEntry() {
   const navigate = useNavigate();
+  const fileInputRef = React.useRef(null);
   const [activeTab, setActiveTab] = useState('manual');
   
   // Stores
@@ -42,8 +33,8 @@ export default function FoodEntry() {
   const [success, setSuccess] = useState(false);
 
   const filteredFoods = useMemo(() => {
-    if (!searchQuery) return MOCK_FOOD_DB;
-    return MOCK_FOOD_DB.filter(f => f.name.toLowerCase().includes(searchQuery.toLowerCase()));
+    if (!searchQuery) return FOOD_DATABASE;
+    return FOOD_DATABASE.filter(f => f.name.toLowerCase().includes(searchQuery.toLowerCase())).slice(0, 50);
   }, [searchQuery]);
 
   const handleFoodSelect = (food) => {
@@ -99,18 +90,36 @@ export default function FoodEntry() {
     }
   };
 
-  const simulateAiDetection = () => {
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
     setAnalyzingImage(true);
-    setTimeout(() => {
-      setSearchQuery('Grilled Chicken Salad');
-      setMealName('Grilled Chicken Salad');
-      setCalories('350');
-      setProtein('45');
-      setSugar('4');
-      setQuantity(1);
-      setAnalyzingImage(false);
-      setActiveTab('manual');
-    }, 2000);
+    
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+        try {
+            const aiResult = await aiService.analyzeFoodImage(reader.result);
+            setSearchQuery(aiResult.name);
+            setMealName(aiResult.name);
+            setCalories(String(aiResult.calories));
+            setProtein(String(aiResult.protein));
+            setSugar(String(aiResult.sugar));
+            setQuantity(1);
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setAnalyzingImage(false);
+            setActiveTab('manual');
+        }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleCameraClick = () => {
+    if (fileInputRef.current) {
+        fileInputRef.current.click();
+    }
   };
 
   return (
@@ -231,8 +240,16 @@ export default function FoodEntry() {
             exit={{ x: -20, opacity: 0 }}
             className="flex flex-col gap-4"
           >
+            <input 
+              type="file" 
+              accept="image/*" 
+              capture="environment" 
+              ref={fileInputRef} 
+              className="hidden" 
+              onChange={handleImageUpload} 
+            />
             <div 
-              onClick={simulateAiDetection}
+              onClick={handleCameraClick}
               className="relative w-full h-80 rounded-2xl border-2 border-dashed border-indigo-500/50 bg-indigo-500/10 flex flex-col items-center justify-center cursor-pointer hover:bg-indigo-500/20 transition-colors overflow-hidden group"
             >
               {analyzingImage ? (
