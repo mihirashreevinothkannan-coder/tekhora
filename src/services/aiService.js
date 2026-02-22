@@ -25,7 +25,7 @@ export const aiService = {
     analyzeFoodImage: async (base64Image) => {
         if (genAI && base64Image) {
             try {
-                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+                const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
                 const prompt = "Identify the Indian food in this image. Return strictly a JSON object replacing the keys with your estimates: {\"name\": \"string\", \"calories\": 0, \"protein\": 0, \"sugar\": 0}. Do not format with markdown.";
 
                 // base64 parsing (remove data uri prefix)
@@ -69,7 +69,7 @@ export const aiService = {
         if (!genAI) return defaultMessage;
 
         try {
-            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+            const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
             const prompt = `You are a tough, uncompromising but highly motivating AI Nutrition Coach. 
 The user's daily metrics: ${totals.calories} kcal, ${totals.sugar}g sugar, ${totals.protein}g protein. 
 Their discipline score today is ${score}/100, status: ${status}. 
@@ -92,7 +92,7 @@ Give a very short, punchy 2-sentence feedback evaluating their performance today
         }
 
         try {
-            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+            const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
             // Format history
             const contextHistory = history.map(msg => `${msg.role === 'user' ? 'User' : 'Coach'}: ${msg.content}`).join('\n');
@@ -127,7 +127,7 @@ Respond strictly as the Coach concisely. Do not use markdown like bolding or bul
         try {
             // Use extremely high temperature and TopK for totally random/novel plan generation
             const model = genAI.getGenerativeModel({
-                model: "gemini-1.5-flash",
+                model: "gemini-2.5-flash",
                 generationConfig: {
                     temperature: 1.4, // ultra-high variance
                     topK: 60,
@@ -171,7 +171,7 @@ Format intelligently using simple markdown (bolding, simple unnested lists). Do 
         }
 
         try {
-            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+            const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
             const prompt = `You are a strict Indian food nutrition database parser. 
 The user typed: "${textInput}".
 Identify the food and portion they ate. Estimate the typical calories, protein (g), and sugar (g).
@@ -199,7 +199,7 @@ Return STRICTLY a JSON object with NO markdown formatting: {"name": "Detected Fo
         }
 
         try {
-            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+            const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
             // Summarize the data for the prompt
             const dataString = weeklyData.map(d => `${d.day}: ${d.calories}kcal, ${d.protein}g protein, ${d.sugar}g sugar, Score: ${d.score}`).join('\n');
 
@@ -213,6 +213,50 @@ Provide a short, 3-sentence deep-dive analysis of their trends. Point out any co
         } catch (error) {
             console.error("Gemini Insights Error:", error);
             return "Failed to analyze trends. System offline.";
+        }
+    },
+
+    /**
+     * Generate Workout Plan focusing on reducing excess calories
+     */
+    generateWorkoutPlan: async (userStats, userGoal) => {
+        if (!genAI) {
+            return `## Mock Workout Plan\n- **Warmup**: 10 mins jogging\n- **Cardio**: 30 mins HIIT to burn excess calories\n- **Cooldown**: 5 mins stretching`;
+        }
+
+        try {
+            const model = genAI.getGenerativeModel({
+                model: "gemini-2.5-flash",
+                generationConfig: {
+                    temperature: 0.9,
+                }
+            });
+
+            const caloriesEaten = userStats?.calories?.current || 0;
+            const caloriesTarget = userStats?.calories?.target || 2000;
+            const excessCalories = Math.max(0, caloriesEaten - caloriesTarget);
+
+            let statsContext = `The user has consumed ${caloriesEaten} kcal today against a target of ${caloriesTarget} kcal.`;
+            if (excessCalories > 0) {
+                statsContext += ` They have an excess of ${excessCalories} kcal.`;
+            } else {
+                statsContext += ` They are currently in a deficit or on track, but want a good workout.`;
+            }
+
+            const prompt = `You are a tough, elite AI Personal Trainer. The user's goal is: ${userGoal || 'Fitness'}. 
+${statsContext}
+
+Generate a highly effective, structured workout plan for today. 
+CRITICAL REQUIREMENT: If the user has excess calories, specifically design the workout to burn off those excess calories (e.g., recommend HIIT, intense cardio, or heavy lifting with minimal rest). Mention how the workout helps reduce the excess intake.
+If they don't have excess calories, provide a solid, balanced muscle-building or endurance workout.
+
+Format the response using simple markdown (bolding, simple unnested lists). Make it actionable, intense, and motivating. Do not use complex tables.`;
+
+            const result = await model.generateContent(prompt);
+            return result.response.text().trim();
+        } catch (error) {
+            console.error("Gemini Workout Plan Error:", error);
+            return "Failed to generate workout plan. Please check your connection.";
         }
     }
 };

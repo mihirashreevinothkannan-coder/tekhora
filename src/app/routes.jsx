@@ -7,6 +7,7 @@ const Setup = lazy(() => import('../pages/Setup'));
 const Dashboard = lazy(() => import('../pages/Dashboard'));
 const FoodEntry = lazy(() => import('../pages/FoodEntry'));
 const Analytics = lazy(() => import('../pages/Analytics'));
+const WorkoutPlan = lazy(() => import('../pages/WorkoutPlan'));
 
 export const router = createBrowserRouter([
   {
@@ -32,6 +33,10 @@ export const router = createBrowserRouter([
       {
         path: 'analytics',
         element: <Analytics />
+      },
+      {
+        path: 'workout',
+        element: <WorkoutPlan />
       }
     ]
   }

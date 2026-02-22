@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Home, PlusCircle, BarChart3, Activity } from 'lucide-react';
+import { Home, PlusCircle, BarChart3, Activity, Dumbbell } from 'lucide-react';
 import { useUserStore } from '../../store/useUserStore';
 import { Flame } from 'lucide-react';
 import ProfileModal from '../ProfileModal';
@@ -15,6 +15,7 @@ const AppLayout = () => {
     { path: '/dashboard', icon: Home, label: 'Home' },
     { path: '/log', icon: PlusCircle, label: 'Add Food' },
     { path: '/analytics', icon: BarChart3, label: 'Stats' },
+    { path: '/workout', icon: Dumbbell, label: 'Workout' },
   ];
 
   const user = useUserStore((state) => state.user);
