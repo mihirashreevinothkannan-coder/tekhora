@@ -256,7 +256,10 @@ Format the response using simple markdown (bolding, simple unnested lists). Make
             return result.response.text().trim();
         } catch (error) {
             console.error("Gemini Workout Plan Error:", error);
-            return "Failed to generate workout plan. Please check your connection.";
+            if (error.message?.includes('429') || error.status === 429 || error.message?.includes('quota')) {
+                return "You've hit the free tier Gemini API rate limit! Please wait about 30 seconds and click Generate again.";
+            }
+            return "Failed to generate workout plan. Please check your connection or API key.";
         }
     }
 };

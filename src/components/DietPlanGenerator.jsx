@@ -9,6 +9,7 @@ export default function DietPlanGenerator({ userStats, userGoal }) {
     const [isOpen, setIsOpen] = useState(false);
     const [dietPlan, setDietPlan] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [isCompleted, setIsCompleted] = useState(false);
 
     const handleGenerate = async () => {
         setIsOpen(true);
@@ -60,7 +61,26 @@ export default function DietPlanGenerator({ userStats, userGoal }) {
                             <span className="text-xs font-bold text-primary-300 uppercase tracking-widest flex items-center gap-2">
                                 <Sparkles size={14} /> Plan Generated
                             </span>
-                            <ChevronUp size={16} className="text-primary-300" />
+                            <div className="flex items-center gap-4">
+                                <div 
+                                    className={`flex items-center gap-2 px-3 py-1 rounded-full border transition-all select-none
+                                        ${isCompleted ? 'bg-primary-500/20 border-primary-500 text-primary-400' : 'bg-slate-800/50 border-slate-600 text-slate-400 hover:border-slate-500'}
+                                    `}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setIsCompleted(!isCompleted);
+                                    }}
+                                >
+                                    <div className={`w-3 h-3 rounded-full border flex items-center justify-center transition-colors
+                                        ${isCompleted ? 'border-primary-500 bg-primary-500' : 'border-slate-500'}
+                                    `}>
+                                    </div>
+                                    <span className="font-bold text-[10px] tracking-widest uppercase">
+                                    {isCompleted ? 'Done' : 'Mark Done'}
+                                    </span>
+                                </div>
+                                <ChevronUp size={16} className="text-primary-300" />
+                            </div>
                         </div>
 
                         <div className="p-4 max-h-[300px] overflow-y-auto custom-scrollbar">
@@ -70,7 +90,7 @@ export default function DietPlanGenerator({ userStats, userGoal }) {
                                     <p className="text-xs font-bold uppercase tracking-widest animate-pulse">Crafting plan...</p>
                                 </div>
                             ) : (
-                                <div className="prose prose-invert prose-sm max-w-none prose-p:leading-relaxed prose-li:marker:text-primary-500 prose-headings:text-primary-300">
+                                <div className={`prose prose-invert prose-sm max-w-none prose-p:leading-relaxed prose-li:marker:text-primary-500 prose-headings:text-primary-300 transition-opacity ${isCompleted ? 'opacity-40 line-through' : 'opacity-100'}`}>
                                     <ReactMarkdown>{dietPlan}</ReactMarkdown>
                                 </div>
                             )}
